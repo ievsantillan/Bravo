@@ -131,10 +131,9 @@
       "OffsetWeek": 0,
       "OffsetDays": 0,
       "HolidayName": "Christmas Day",
-      "SubstituteHoliday": "NoSubstituteHoliday",
+      "SubstituteHoliday": "FridayIfSaturdayOrMondayIfSunday",
       "ConflictPriority": 100
     },
-
     {
       "IsoCountry": "AT",
       "MonthNumber": 1,
@@ -1588,7 +1587,6 @@
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 50
     },
-
     {
       "IsoCountry": "DK",
       "MonthNumber": 1,
@@ -1596,7 +1594,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "New Year's Day",
+      "HolidayName": "Nytårsdag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 100
     },
@@ -1607,7 +1605,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Maundy Thursday",
+      "HolidayName": "Skærtorsdag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 50
     },
@@ -1618,7 +1616,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Good Friday",
+      "HolidayName": "Langfredag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 50
     },
@@ -1629,7 +1627,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Easter Monday",
+      "HolidayName": "Anden påskedag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 50
     },
@@ -1640,9 +1638,10 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Prayer Day",
+      "HolidayName": "Store bededag",
       "SubstituteHoliday": "NoSubstituteHoliday",
-      "ConflictPriority": 50
+      "ConflictPriority": 50,
+      "LastYear": 2023
     },
     {
       "IsoCountry": "DK",
@@ -1651,7 +1650,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Ascension Day",
+      "HolidayName": "Kristi himmelfartsdag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 50
     },
@@ -1662,40 +1661,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Whit Monday",
-      "SubstituteHoliday": "NoSubstituteHoliday",
-      "ConflictPriority": 50
-    },
-    {
-      "IsoCountry": "DK",
-      "MonthNumber": 5,
-      "DayNumber": 1,
-      "WeekDayNumber": 0,
-      "OffsetWeek": 0,
-      "OffsetDays": 0,
-      "HolidayName": "Labour Day",
-      "SubstituteHoliday": "NoSubstituteHoliday",
-      "ConflictPriority": 100
-    },
-    {
-      "IsoCountry": "DK",
-      "MonthNumber": 6,
-      "DayNumber": 5,
-      "WeekDayNumber": 0,
-      "OffsetWeek": 0,
-      "OffsetDays": 0,
-      "HolidayName": "Constitution Day",
-      "SubstituteHoliday": "NoSubstituteHoliday",
-      "ConflictPriority": 50
-    },
-    {
-      "IsoCountry": "DK",
-      "MonthNumber": 12,
-      "DayNumber": 24,
-      "WeekDayNumber": 0,
-      "OffsetWeek": 0,
-      "OffsetDays": 0,
-      "HolidayName": "Christmas Eve",
+      "HolidayName": "Anden pinsedag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 50
     },
@@ -1706,7 +1672,7 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Christmas Day",
+      "HolidayName": "Juledag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 100
     },
@@ -1717,22 +1683,10 @@
       "WeekDayNumber": 0,
       "OffsetWeek": 0,
       "OffsetDays": 0,
-      "HolidayName": "Second Day of Christmas",
+      "HolidayName": "Anden juledag",
       "SubstituteHoliday": "NoSubstituteHoliday",
       "ConflictPriority": 100
     },
-    {
-      "IsoCountry": "DK",
-      "MonthNumber": 12,
-      "DayNumber": 31,
-      "WeekDayNumber": 0,
-      "OffsetWeek": 0,
-      "OffsetDays": 0,
-      "HolidayName": "New Year's Eve",
-      "SubstituteHoliday": "NoSubstituteHoliday",
-      "ConflictPriority": 100
-    },
-
     {
       "IsoCountry": "BR",
       "MonthNumber": 1,
@@ -1971,7 +1925,8 @@
       "OffsetDays": 0,
       "HolidayName": "Greenery Day",
       "SubstituteHoliday": "SubstituteHolidayWithNextNextWorkingDay",
-      "ConflictPriority": 100
+      "ConflictPriority": 100,
+      "FirstYear": 2007
     },
     {
       "IsoCountry": "JP",
@@ -2381,7 +2336,7 @@
       "MonthNumber": 8,
       "DayNumber": 0,
       "WeekDayNumber": 1,
-      "OffsetWeek": 0,
+      "OffsetWeek": 1,
       "OffsetDays": 0,
       "HolidayName": "Frídagur verslunarmanna",
       "SubstituteHoliday": "NoSubstituteHoliday",

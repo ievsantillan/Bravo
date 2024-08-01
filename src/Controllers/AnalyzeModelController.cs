@@ -7,6 +7,9 @@
     using Sqlbi.Bravo.Models.AnalyzeModel;
     using Sqlbi.Bravo.Services;
     using System.Collections.Generic;
+    using System.Data;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Net.Mime;
     using System.Threading;
     using System.Threading.Tasks;
@@ -20,6 +23,10 @@
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     public class AnalyzeModelController : ControllerBase
     {
+        private const string VpaxObfuscationDictionaryFilter = "VPAX obfuscation dictionary (*.dict)|*.dict";
+        private const string VpaxObfuscatedFilter = "VPAX obfuscated file (*.ovpax)|*.ovpax";
+        private const string VpaxFilter = "VPAX file (*.vpax)|*.vpax";
+
         private readonly IAnalyzeModelService _analyzeModelService;
         private readonly IAuthenticationService _authenticationService;
 
@@ -33,15 +40,43 @@
         /// Returns a database model from the VPAX file stream
         /// </summary>
         /// <response code="200">Status200OK - Success</response>
+        /// <response code="204">Status204NoContent - User canceled action (e.g. 'Cancel' button has been pressed on a dialog box)</response>
         [HttpPost]
         [ActionName("GetModelFromVpax")]
         [Consumes(MediaTypeNames.Application.Octet)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TabularDatabase))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesDefaultResponseType]
-        public IActionResult GetDatabase()
+        public IActionResult GetDatabase(CancellationToken cancellationToken) // @daniele: remove the whole method
         {
-            var database = _analyzeModelService.GetDatabase(stream: Request.Body);
+            string? dictionaryPath = null;
+
+            var deobfuscate = CommonHelper.IsKeyDown(System.Windows.Forms.Keys.ShiftKey);
+            if (deobfuscate && !WindowDialogHelper.OpenFileDialog(filter: VpaxObfuscationDictionaryFilter, out dictionaryPath, cancellationToken))
+                return NoContent();
+
+            using var dictionaryStream = dictionaryPath != null ? new System.IO.FileStream(dictionaryPath, System.IO.FileMode.Open, System.IO.FileAccess.Read) : null;
+            var database = _analyzeModelService.GetDatabase(stream: Request.Body, dictionaryStream);
+            return Ok(database);
+        }
+
+        /// <summary>
+        /// Returns a database model from the VPAX file stream. If an obfuscation dictionary is provided, the model will be deobfuscated.
+        /// </summary>
+        /// <response code="200">Status200OK - Success</response>
+        [HttpPost]
+        [ActionName("GetModelFromVpax_NEW")] // @daniele: rename removing the '_NEW' suffix
+        //[Consumes(MediaTypeNames.Application.Octet)]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TabularDatabase))]
+        [ProducesDefaultResponseType]
+        public IActionResult GetDatabase(IFormFile[] files)
+        {
+            using var stream = files[0].OpenReadStream();
+            using var dictionaryStream = files.ElementAtOrDefault(1)?.OpenReadStream();
+
+            var database = _analyzeModelService.GetDatabase(stream, dictionaryStream);
             return Ok(database);
         }
 
@@ -144,15 +179,20 @@
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesDefaultResponseType]
-        public IActionResult ExportVpax(PBIDesktopReport report, CancellationToken cancellationToken)
+        public IActionResult ExportVpax(PBIDesktopReport report, ExportVpaxMode mode, CancellationToken cancellationToken)
         {
-            if (WindowDialogHelper.SaveFileDialog(fileName: report.ReportName, defaultExt: "VPAX", out var path, cancellationToken))
+            // @daniele: remove IF block
+            if (mode == ExportVpaxMode.Default)
             {
-                _analyzeModelService.ExportVpax(report, path, cancellationToken);
-                return Ok();
+                if (CommonHelper.IsKeyDown(System.Windows.Forms.Keys.ShiftKey)) mode = ExportVpaxMode.Obfuscate; else
+                if (CommonHelper.IsKeyDown(System.Windows.Forms.Keys.ControlKey)) mode = ExportVpaxMode.ObfuscateIncremental;
             }
 
-            return NoContent();
+            if (!TryGetExportPaths(report.ReportName, mode, out var path, out var dictionaryPath, out var inputDictionaryPath, cancellationToken))
+                return NoContent();
+
+            _analyzeModelService.ExportVpax(report, path, dictionaryPath, inputDictionaryPath, cancellationToken);
+            return Ok();
         }
 
         /// <summary>
@@ -169,18 +209,40 @@
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> ExportVpax(PBICloudDataset dataset, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExportVpax(PBICloudDataset dataset, ExportVpaxMode mode, CancellationToken cancellationToken)
         {
+            if (mode == ExportVpaxMode.Default) // @daniele: remove IF block
+            {
+                if (CommonHelper.IsKeyDown(System.Windows.Forms.Keys.ShiftKey)) mode = ExportVpaxMode.Obfuscate; else
+                if (CommonHelper.IsKeyDown(System.Windows.Forms.Keys.ControlKey)) mode = ExportVpaxMode.ObfuscateIncremental;
+            }
+
             if (await _authenticationService.IsPBICloudSignInRequiredAsync(cancellationToken))
                 return Unauthorized();
 
-            if (WindowDialogHelper.SaveFileDialog(fileName: dataset.DisplayName, defaultExt: "VPAX", out var path, cancellationToken))
-            {
-                _analyzeModelService.ExportVpax(dataset, path, _authenticationService.PBICloudAuthentication.AccessToken, cancellationToken);
-                return Ok();
-            }
+            if (!TryGetExportPaths(dataset.DisplayName, mode, out var path, out var dictionaryPath, out var inputDictionaryPath, cancellationToken))
+                return NoContent();
 
-            return NoContent();
+            _analyzeModelService.ExportVpax(dataset, path, dictionaryPath, inputDictionaryPath, _authenticationService.PBICloudAuthentication.AccessToken, cancellationToken);
+            return Ok();
+        }
+
+        private static bool TryGetExportPaths(string? fileName, ExportVpaxMode mode, [NotNullWhen(true)] out string? path, out string? dictionaryPath, out string? inputDictionaryPath, CancellationToken cancellationToken)
+        {
+            path = null;
+            dictionaryPath = null;
+            inputDictionaryPath = null;
+
+            if (mode == ExportVpaxMode.ObfuscateIncremental && !WindowDialogHelper.OpenFileDialog(filter: VpaxObfuscationDictionaryFilter, out inputDictionaryPath, cancellationToken))
+                return false;
+
+            if (!WindowDialogHelper.SaveFileDialog(fileName, filter: mode.IsObfuscate() ? VpaxObfuscatedFilter : VpaxFilter, defaultExt: mode.IsObfuscate() ? "OVPAX" : "VPAX", out path, cancellationToken))
+                return false;
+
+            if (mode.IsObfuscate() && !WindowDialogHelper.SaveFileDialog(fileName, filter: VpaxObfuscationDictionaryFilter, defaultExt: "DICT", out dictionaryPath, cancellationToken))
+                return false;
+
+            return true;
         }
     }
 }

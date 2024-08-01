@@ -1,10 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6-windows10.0.17763.0</TargetFramework>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Assets\bravo.ico</ApplicationIcon>
     <Company>SQLBI</Company>
@@ -23,6 +22,7 @@
     <IsPublishable>true</IsPublishable>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <Choose>
@@ -56,11 +56,12 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="Dax.Model.Extractor" Version="1.3.3" />
-    <PackageReference Include="Dax.Template" Version="0.1.10" />
+    <PackageReference Include="Dax.Model.Extractor" Version="1.6.0" />
+    <PackageReference Include="Dax.Template" Version="0.1.13" />
     <PackageReference Include="Dax.Formatter" Version="1.1.1" />
-    <PackageReference Include="Dax.ViewModel" Version="1.3.3" />
-    <PackageReference Include="Dax.Vpax" Version="1.3.3" />
+    <PackageReference Include="Dax.ViewModel" Version="1.6.0" />
+    <PackageReference Include="Dax.Vpax" Version="1.6.0" />
+    <PackageReference Include="Dax.Vpax.Obfuscator" Version="1.0.5" />
     <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="6.5.1" />
     <PackageReference Include="LargeXlsx" Version="1.8.0" />
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
